@@ -1,0 +1,10 @@
+
+> @cloud-monorepo/graphql-server@0.0.0 build
+> rimraf dist && mkdir -p dist && cp -r src/* dist/
+
+A subdirectory or file -p already exists.
+Error occurred while processing: -p.
+npm error Lifecycle script `build` failed with error:
+npm error Error: command failed
+npm error   in workspace: @cloud-monorepo/graphql-server@0.0.0
+npm error   at location: C:\Users\Lakshmana.H\OneDrive - Brillio\Desktop\practies react\monorepo\cloud-monorepo\apps\graphql-server

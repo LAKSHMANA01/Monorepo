@@ -1,0 +1,25 @@
+{
+  "name": "@cloud-monorepo/config",
+
+  "private": true,
+  "description": "Configuration package for the cloud monorepo",
+  "license": "MIT",
+  "main": "dist/index.js",
+ 
+  "type": "module",
+
+  "version": "1.0.0",
+  "exports": {
+    ".": "./src/index.js",
+    "./Button": "./src/Button.jsx"
+  },
+  
+  "scripts": {
+    "clean": "rimraf dist"
+  },
+  "devDependencies": {
+    "rimraf": "^5.0.1",
+    "@originjs/vite-plugin-federation": "1.2.3",
+    "@vitejs/plugin-react": "^4.0.4",
+    "vite": "^4.4.9"}
+}

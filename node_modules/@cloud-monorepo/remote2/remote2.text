@@ -1,0 +1,326 @@
+# Navigate to remote2 directory
+cd ../../apps/remote2
+
+# Initialize package.json
+cat > package.json << EOF
+{
+  "name": "@my-monorepo/remote2",
+  "version": "0.0.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "vite preview --port 3002",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^6.15.0",
+    "chart.js": "^4.3.3",
+    "react-chartjs-2": "^5.2.0",
+    "@my-monorepo/ui": "*"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-federation": "^1.2.3",
+    "@vitejs/plugin-react": "^4.0.4",
+    "vite": "^4.4.9",
+    "@my-monorepo/config": "*",
+    "rimraf": "^5.0.1"
+  }
+}
+EOF
+
+# Create vite.config.js
+cat > vite.config.js << EOF
+import { createViteConfig } from '@my-monorepo/config';
+
+export default createViteConfig({
+  name: 'remote2',
+  port: 3002,
+  exposes: {
+    // Export components to be used by the host application
+    './App': './src/App.js',
+    './Dashboard': './src/components/Dashboard.js'
+  },
+  remotes: {}
+});
+EOF
+
+# Create source directory
+mkdir -p src/components
+
+# Create index.html
+cat > index.html << EOF
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Remote App 2</title>
+  <!-- Include Tailwind CDN for quick styling -->
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+  <div id="root"></div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
+EOF
+
+# Create main.js for standalone operation
+cat > src/main.js << EOF
+import React from 'react';
+import ReactDOM from 'react-dom/client';
+import App from './App';
+
+ReactDOM.createRoot(document.getElementById('root')).render(
+  <React.StrictMode>
+    <App />
+  </React.StrictMode>
+);
+EOF
+
+# Create App.js
+cat > src/App.js << EOF
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import Settings from './components/Settings';
+import { Card } from '@my-monorepo/ui';
+
+const App = () => {
+  return (
+    <div className="p-4">
+      <Card title="Remote App 2">
+        <p className="mb-4">This is another micro frontend app with dashboard functionality.</p>
+        <div className="mb-4">
+          <nav className="flex space-x-4">
+            <a href="/remote2" className="text-blue-600 hover:text-blue-800">Dashboard</a>
+            <a href="/remote2/settings" className="text-blue-600 hover:text-blue-800">Settings</a>
+
+            # Continue with src/App.js
+cat > src/App.js << EOF
+import React from 'react';
+import { Routes, Route } from 'react-router-dom';
+import Dashboard from './components/Dashboard';
+import Settings from './components/Settings';
+import { Card } from '@my-monorepo/ui';
+
+const App = () => {
+  return (
+    <div className="p-4">
+      <Card title="Remote App 2">
+        <p className="mb-4">This is another micro frontend app with dashboard functionality.</p>
+        <div className="mb-4">
+          <nav className="flex space-x-4">
+            <a href="/remote2" className="text-blue-600 hover:text-blue-800">Dashboard</a>
+            <a href="/remote2/settings" className="text-blue-600 hover:text-blue-800">Settings</a>
+          </nav>
+        </div>
+        <Routes>
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/settings" element={<Settings />} />
+        </Routes>
+      </Card>
+    </div>
+  );
+};
+
+export default App;
+EOF
+
+# Create Dashboard component with a chart
+cat > src/components/Dashboard.js << EOF
+import React, { useState, useEffect } from 'react';
+import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from 'chart.js';
+import { Bar } from 'react-chartjs-2';
+import { Button } from '@my-monorepo/ui';
+
+// Register Chart.js components
+ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+
+const Dashboard = () => {
+  const [chartData, setChartData] = useState({
+    labels: ['January', 'February', 'March', 'April', 'May', 'June'],
+    datasets: [
+      {
+        label: 'Sales 2024',
+        data: [12, 19, 3, 5, 2, 3],
+        backgroundColor: 'rgba(53, 162, 235, 0.5)',
+      },
+      {
+        label: 'Sales 2025',
+        data: [15, 21, 8, 12, 9, 7],
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+      }
+    ],
+  });
+
+  const chartOptions = {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: 'Monthly Sales Comparison',
+      },
+    },
+  };
+
+  const regenerateData = () => {
+    const newData = {
+      labels: chartData.labels,
+      datasets: chartData.datasets.map(dataset => ({
+        ...dataset,
+        data: Array.from({ length: 6 }, () => Math.floor(Math.random() * 30))
+      }))
+    };
+    
+    setChartData(newData);
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Sales Dashboard</h2>
+      <div className="mb-4">
+        <Button onClick={regenerateData}>Regenerate Data</Button>
+      </div>
+      <div className="bg-white p-4 rounded-lg shadow">
+        <Bar options={chartOptions} data={chartData} />
+      </div>
+    </div>
+  );
+};
+
+export default Dashboard;
+EOF
+
+# Create Settings component
+cat > src/components/Settings.js << EOF
+import React, { useState } from 'react';
+import { Button } from '@my-monorepo/ui';
+
+const Settings = () => {
+  const [settings, setSettings] = useState({
+    notifications: true,
+    darkMode: false,
+    dataSharing: true
+  });
+
+  const handleToggle = (setting) => {
+    setSettings({
+      ...settings,
+      [setting]: !settings[setting]
+    });
+  };
+
+  return (
+    <div>
+      <h2 className="text-xl font-semibold mb-4">Dashboard Settings</h2>
+      <div className="space-y-4">
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <h3 className="font-medium">Notifications</h3>
+            <p className="text-sm text-gray-600">Receive alerts about dashboard updates</p>
+          </div>
+          <div>
+            <Button 
+              variant={settings.notifications ? "primary" : "secondary"}
+              onClick={() => handleToggle('notifications')}
+            >
+              {settings.notifications ? "Enabled" : "Disabled"}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <h3 className="font-medium">Dark Mode</h3>
+            <p className="text-sm text-gray-600">Use dark theme for dashboard</p>
+          </div>
+          <div>
+            <Button 
+              variant={settings.darkMode ? "primary" : "secondary"}
+              onClick={() => handleToggle('darkMode')}
+            >
+              {settings.darkMode ? "Enabled" : "Disabled"}
+            </Button>
+          </div>
+        </div>
+        
+        <div className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+          <div>
+            <h3 className="font-medium">Data Sharing</h3>
+            <p className="text-sm text-gray-600">Share anonymous usage data</p>
+          </div>
+          <div>
+            <Button 
+              variant={settings.dataSharing ? "primary" : "secondary"}
+              onClick={() => handleToggle('dataSharing')}
+            >
+              {settings.dataSharing ? "Enabled" : "Disabled"}
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default Settings;
+EOF
+
+
+
+
+# Update the packages/config/index.js file to use CommonJS syntax
+cd packages/config
+cat > index.js << EOF
+const { createViteConfig } = require('./vite-config');
+
+module.exports = {
+  createViteConfig
+};
+EOF
+
+# Also update vite-config.js to use CommonJS
+cat > vite-config.js << EOF
+// Replace the existing file with CommonJS exports
+const { defineConfig } = require('vite');
+const react = require('@vitejs/plugin-react');
+const federation = require('@originjs/vite-plugin-federation');
+const path = require('path');
+
+function createViteConfig(options) {
+  const { name, port, exposes, remotes } = options;
+  
+  return defineConfig({
+    plugins: [
+      react(),
+      federation({
+        name,
+        filename: 'remoteEntry.js',
+        exposes,
+        remotes,
+        shared: ['react', 'react-dom']
+      })
+    ],
+    server: {
+      port
+    },
+    build: {
+      modulePreload: false,
+      target: 'esnext',
+      minify: false,
+      cssCodeSplit: false
+    }
+  });
+}
+
+module.exports = {
+  createViteConfig
+};
+EOF

@@ -1,0 +1,30 @@
+{
+  "name": "@cloud-monorepo/ui",
+  "version": "0.0.0",
+  "main": "dist/my-library.umd.js",
+  "module": "dist/my-library.es.js",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": "./dist/my-library.es.js",
+      "require": "./dist/my-library.umd.js"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "react": "^18.0.0",
+    "react-dom": "^18.0.0"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-react": "^4.0.0",
+    "rimraf": "^5.0.1",
+    "vite": "^4.5.13"
+  }
+}

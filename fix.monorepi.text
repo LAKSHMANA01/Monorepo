@@ -1,0 +1,99 @@
+# Create a fix script
+cat > fix-monorepo.sh << EOF
+#!/bin/bash
+
+# Fix config package to use CommonJS
+echo "Fixing config package..."
+cat > packages/config/index.js << 'END'
+const { createViteConfig } = require('./vite-config');
+
+module.exports = {
+  createViteConfig
+};
+END
+
+cat > packages/config/vite-config.js << 'END'
+const { defineConfig } = require('vite');
+const react = require('@vitejs/plugin-react');
+const federation = require('@originjs/vite-plugin-federation');
+const path = require('path');
+
+function createViteConfig(options) {
+  const { name, port, exposes, remotes } = options;
+  
+  return defineConfig({
+    plugins: [
+      react(),
+      federation({
+        name,
+        filename: 'remoteEntry.js',
+        exposes,
+        remotes,
+        shared: ['react', 'react-dom']
+      })
+    ],
+    server: {
+      port
+    },
+    build: {
+      modulePreload: false,
+      target: 'esnext',
+      minify: false,
+      cssCodeSplit: false
+    }
+  });
+}
+
+module.exports = {
+  createViteConfig
+};
+END
+
+# Fix host app
+echo "Fixing host app..."
+cat > apps/host/vite.config.js << 'END'
+const { createViteConfig } = require('@cloud-monorepo/config');
+
+module.exports = createViteConfig({
+  name: 'host',
+  port: 3000,
+  remotes: {
+    remote1: 'http://localhost:3001/remoteEntry.js',
+    remote2: 'http://localhost:3002/remoteEntry.js'
+  }
+});
+END
+
+# Fix remote1 app
+echo "Fixing remote1 app..."
+cat > apps/remote1/vite.config.js << 'END'
+const { createViteConfig } = require('@cloud-monorepo/config');
+
+module.exports = createViteConfig({
+  name: 'remote1',
+  port: 3001,
+  exposes: {
+    './Button': './src/components/Button.jsx'
+  }
+});
+END
+
+# Fix remote2 app
+echo "Fixing remote2 app..."
+cat > apps/remote2/vite.config.js << 'END'
+const { createViteConfig } = require('@cloud-monorepo/config');
+
+module.exports = createViteConfig({
+  name: 'remote2',
+  port: 3002,
+  exposes: {
+    './Card': './src/components/Card.jsx'
+  }
+});
+END
+
+echo "Fixes applied successfully!"
+EOF
+
+chmod +x fix-monorepo.sh
+./fix-monorepo.sh
